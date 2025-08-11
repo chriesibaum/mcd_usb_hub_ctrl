@@ -1,7 +1,8 @@
 __author__ = "Thomas Popp, Thomas@chriesibaum.com"
 __copyright__ = "Copyright 2025, Chriesibaum GmbH"
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
+import time
 import serial
 
 
@@ -32,9 +33,23 @@ class MCDUsbHubCtrl():
     def write_cmd(self, cmd, ret_size=0):
         if not self.s.is_open:
             raise Exception("Serial port is not open")
-        self.s.write(cmd)
 
-        return self.s.read(ret_size)
+        for i in range(3):
+            try:
+                self.s.write(cmd)
+                ret = self.s.read(ret_size)
+            except Exception as e:
+                print(f"Error occurred: {e}")
+                time.sleep(0.1)
+                self.s.flushInput()
+
+            if len(ret) == ret_size:
+                return ret
+            else:
+                print(f"Unexpected response length: {len(ret)}")
+                time.sleep(0.1)
+
+        raise Exception("Failed to get valid response")
 
     def switch_ports(self, ports_on_bits):
         cmd = f'P{ports_on_bits:02X}\r'.encode('utf-8')
