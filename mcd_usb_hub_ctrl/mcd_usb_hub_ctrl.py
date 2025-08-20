@@ -1,6 +1,6 @@
 __author__ = "Thomas Popp, Thomas@chriesibaum.com"
 __copyright__ = "Copyright 2025, Chriesibaum GmbH"
-__version__ = "0.1.4"
+__version__ = "0.2.0"
 
 import time
 import serial
@@ -38,6 +38,10 @@ class MCDUsbHubCtrl():
             try:
                 self.s.write(cmd)
                 ret = self.s.read(ret_size)
+            except serial.SerialException as e:
+                print(f"Error occurred: {e}")
+                time.sleep(0.1)
+                self.s.flushInput()
             except Exception as e:
                 print(f"Error occurred: {e}")
                 time.sleep(0.1)
